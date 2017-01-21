@@ -144,6 +144,10 @@ while (!quit){
         case '':
             break;
 
+        case 'debug':
+          console.log(fsStorage);
+            break;
+
         default:
             console.log("Invalid command"+"\n");
             break;
@@ -216,7 +220,7 @@ function printDir(index){
         for (var i=0; i<files.length; i++){
             console.log('     -'+files[i]);
         }
-        console.log("\n  "+countFolders+" folders(s) and "+countFiles+" file(s) are found");
+        console.log("\n  "+countFolders+" folders(s) and "+countFiles+" file(s) were found");
         console.log("\n");
     }else{
         console.log('\x1b[32m','    -Empty','\x1b[0m');
@@ -297,16 +301,21 @@ function createFile(fileName, content){
 
 
 function openFile(fileName){
-    for (var i=0; i<fsStorage.length; i++){
-        if((fsStorage[i] === 4 && fsStorage[i][1] === addressIndex) && (fsStorage[i][2] === fileName.toLowerCase())){
-            console.log("  "+fsStorage[i][2]+":");
-            console.log("     "+fsStorage[i][3]);
+    if (isExist(fileName)){
+        var id = getID(fileName);
+        if(!isFolder(id)){
+            console.log("  "+fsStorage[id][2]+":");
+            console.log("     "+fsStorage[id][3]);
             console.log("\n");
-            return;
+        }else{
+            console.log("Error: could not open \'"+fileName+"\' (try cd command)");
+            console.log("\n");
         }
+    }else{
+        console.log("Error: \'"+fileName+"\' file isn\'t exist");
+        console.log("\n");
     }
-    console.log("Error: \'"+fileName+"\' file isn\'t exist");
-    console.log("\n");
+
 }
 
 function deleteFile(fileName){
@@ -400,9 +409,28 @@ function getContent(str) {
     }
     return content;
 }
+
 function isFolder(id){
-    if (fsStorage[id].length() === 3){
+    if (fsStorage[id].length === 3){
         return true;
+    }
+    return false;
+}
+
+function getID(name){
+    for (var i=0; i<fsStorage.length; i++){
+        if((fsStorage[i][1] === addressIndex) && (fsStorage[i][2] === name.toLowerCase())){
+            return fsStorage[i][0];
+        }
+    }
+    return -1;
+}
+
+function isExist(name){
+    for (var i=0; i<fsStorage.length; i++){
+        if((fsStorage[i][1] === addressIndex) && (fsStorage[i][2] === name.toLowerCase())){
+            return true;
+        }
     }
     return false;
 }
