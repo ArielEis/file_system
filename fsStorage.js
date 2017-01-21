@@ -11,8 +11,8 @@ var help = [
     ['md', '  Create new folder', 'Usage: md [folder-name]'],
     ['mf', '  Create new file', 'Usage: mf [file-name] [optional: content]'],
     ['open', 'Open file', 'Usage: open [file-name]'],
-    ['rd', '  Remove directory', 'Usage: rd [folder-name]'],
-    ['rf', '  Remove file', 'Usage: rf [file-name]'],
+    ['rd', '  Remove directory or file', 'Usage: rd [folder-name]'],
+    ['rf', '  Remove file only', 'Usage: rf [file-name]'],
     ['quit', 'Quit', 'Usage: quit'],
 ];
 
@@ -157,6 +157,7 @@ while (!quit){
 
 
 function printHelp(){
+    console.log("<help> commands list: ");
     for (var i=0; i<help.length; i++){
         console.log(help[i][0]+"        "+help[i][1]);
     }
@@ -259,42 +260,52 @@ function changeDir(folder){
 
 
 function createDir(folderName){
-    for (var i=0; i<fsStorage.length; i++){
-        if((fsStorage[i][1] === addressIndex) && (fsStorage[i][2] === folderName.toLowerCase())){
-            console.log("Error: folder name \'"+folderName+"\' exist");
-            console.log("\n");
-            return;
+    if (folderName.indexOf(".") === -1)
+    {
+        for (var i=0; i<fsStorage.length; i++){
+            if((fsStorage[i][1] === addressIndex) && (fsStorage[i][2] === folderName.toLowerCase())){
+                console.log("Error: folder name \'"+folderName+"\' exist");
+                console.log("\n");
+                return;
+            }
         }
+        console.log("\'" + folderName + "\' created");
+        fsStorage.push([fsStorage.length,addressIndex,folderName.toLowerCase()]);
+        printDir(addressIndex);
+    }else{
+        console.log("Error: \'" + folderName + "\' is not valid name for directory");
     }
-    console.log("\'" + folderName + "\' created");
-    fsStorage.push([fsStorage.length,addressIndex,folderName.toLowerCase()]);
-    printDir(addressIndex);
+
 }
 
 function createFile(fileName, content){
-    for (var i=0; i<fsStorage.length; i++){
-        if((fsStorage[i][1] === addressIndex) && (fsStorage[i][2] === fileName.toLowerCase())){
-            console.log("Error: \'"+fileName+"\' is exist");
-            console.log("\n");
-            return;
+    if (fileName.indexOf(".") > -1) {
+        for (var i = 0; i < fsStorage.length; i++) {
+            if ((fsStorage[i][1] === addressIndex) && (fsStorage[i][2] === fileName.toLowerCase())) {
+                console.log("Error: \'" + fileName + "\' is exist");
+                console.log("\n");
+                return;
+            }
         }
+        fsStorage.push([fsStorage.length, addressIndex, fileName.toLowerCase(), content]);
+        console.log("\'" + fileName + "\' was created");
+        printDir(addressIndex);
+    }else{
+        console.log("Error: \'" + fileName + "\' is not valid name for file");
     }
-    fsStorage.push([fsStorage.length,addressIndex,fileName.toLowerCase(), content]);
-    console.log("\'" + fileName + "\' was created");
-    printDir(addressIndex);
 }
 
 
 function openFile(fileName){
     for (var i=0; i<fsStorage.length; i++){
-        if((fsStorage[i][1] === addressIndex) && (fsStorage[i][2] === fileName.toLowerCase())){
+        if((fsStorage[i] === 4 && fsStorage[i][1] === addressIndex) && (fsStorage[i][2] === fileName.toLowerCase())){
             console.log("  "+fsStorage[i][2]+":");
             console.log("     "+fsStorage[i][3]);
             console.log("\n");
             return;
         }
     }
-    console.log("Error: \'"+fileName+"\' isn\'t exist");
+    console.log("Error: \'"+fileName+"\' file isn\'t exist");
     console.log("\n");
 }
 
@@ -305,14 +316,20 @@ function deleteFile(fileName){
             index = i;
         }
     }
-    if( index > -1){
-        console.log("\'" + fileName + "\' was deleted");
-        fsStorage.splice(index,1);
-        printDir(addressIndex);
-    }else {
-        console.log("Error: \'" + fileName + "\' isn\'t exist");
+    if (!isFolder(i)){
+        if( index > -1){
+            console.log("\'" + fileName + "\' was deleted");
+            fsStorage.splice(index,1);
+            printDir(addressIndex);
+        }else {
+            console.log("Error: \'" + fileName + "\' isn\'t exist");
+            console.log("\n");
+        }
+    }else{
+        console.log("Error: \'" + fileName + "\' is not a file");
         console.log("\n");
     }
+
 }
 
 function deleteFolder(folderName, pointer_index){
@@ -323,7 +340,7 @@ function deleteFolder(folderName, pointer_index){
         }
     }
     if (index === 0){
-        console.log("\'" + folderName + "\' cannot be delete!");
+        console.log("\'" + folderName + "\' cannot be deleted!");
         console.log("\n");
     }else if( index > 0) {
         var folderContent = [];
@@ -382,4 +399,10 @@ function getContent(str) {
         content+=words[i]+" ";
     }
     return content;
+}
+function isFolder(id){
+    if (fsStorage[id].length() === 3){
+        return true;
+    }
+    return false;
 }
